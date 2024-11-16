@@ -3,13 +3,13 @@
     "@oak/oak": "jsr:@oak/oak@^17.0.0",
     "@tajpouria/cors": "jsr:@tajpouria/cors@^1.2.1",
     "react-router-dom": "npm:react-router-dom@^6.26.2",
-    "react": "npm:react@^18.3"
-
+    "react": "npm:react@^18.3",
+    "socket.io-client": "npm:socket.io-client@^4.8.1"
   },
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"],
     "jsx": "react-jsx",
     "jsxImportSource": "npm:react@^18.3",
-    "jsxImportSourceTypes": "npm:@types/react@^18.3"
+    "jsxImportSourceTypes": "npm:@types/react@^18.3.3"
   }
 }
