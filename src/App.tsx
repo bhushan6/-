@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react"
+import  { useEffect, useState } from "npm:react"
 import "./App.css";
-import {HelloWorld} from "./types.ts";
+import { HelloWorld } from "./types.ts";
 
 function App() {
 
