@@ -19,7 +19,6 @@ function App() {
   useEffect(() => {
     // Create Socket.IO connection
     const newSocket = io('/api', {transports: ['websocket']});
-    // setSocket(newSocket);
 
     // Socket event listeners
     newSocket.on('connect', () => {
