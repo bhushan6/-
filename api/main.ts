@@ -16,7 +16,6 @@ const io = new Server({
     methods: ["GET", "POST"],
     credentials: true
   },
-  path: "/api",
 });
 
 io.on("connection", (socket) => {
