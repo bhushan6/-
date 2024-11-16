@@ -15,7 +15,8 @@ const io = new Server({
     origin: "http://localhost:5173", // Update this to match your React app URL
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  path: "/api",
 });
 
 io.on("connection", (socket) => {
