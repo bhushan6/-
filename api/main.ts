@@ -5,6 +5,7 @@ import { Server } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 
 const router = new Router();
 
+//REST API routes example
 router.get("/api/helloWorld", (context) => {
   context.response.body = { value: "Hello World!" };
 });
@@ -18,17 +19,13 @@ const io = new Server({
   },
 });
 
+//socket io  example
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
 
-  socket.on("chat message", (msg) => {
-    console.log("Message received:", msg);
-    io.emit("chat message", msg);
-  });
-
-  socket.on("typing", (username) => {
-    socket.broadcast.emit("typing", username);
-  });
+  setTimeout(() => {
+    io.emit("message", "Hello from the server!");
+  }, 2000)
 
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
@@ -43,8 +40,11 @@ app.use(routeStaticFilesFrom([
   `${Deno.cwd()}/dist`,
   `${Deno.cwd()}/public`,
 ]));
+console.log(io);
 
 const handler = io.handler(async (req) => {
+  console.log(req);
+  
   return await app.handle(req) || new Response(null, { status: 404 });
 });
 

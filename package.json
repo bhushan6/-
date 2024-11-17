@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "deno task dev:api & deno task dev:vite",
-    "dev:api": "deno run --allow-env --allow-read --allow-net --watch api/main.ts",
+    "dev": "deno task watch:api & deno task dev:vite",
+    "dev:api": "deno run --allow-env --allow-read --allow-net api/main.ts",
+    "watch:api": "deno run --allow-env --allow-read --allow-net --watch api/main.ts",
     "dev:vite": "deno run -A npm:vite",
     "build": "tsc -b && vite build",
     "serve": "deno task build && deno task dev:api",
@@ -15,7 +16,6 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   },
