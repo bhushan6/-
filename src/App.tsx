@@ -1,8 +1,8 @@
 // @deno-types="npm:@types/react@^18.3.3"
 import { useEffect, useState } from "react";
 import "./App.css";
-import { HelloWorld } from "./types.ts";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
+import { ClientToServerEvents, ServerToClientEvents } from "./shared/types.ts";
 
 function App() {
   const [helloWorld, setHelloWorld] = useState<string | null>(null);
@@ -10,18 +10,18 @@ function App() {
   useEffect(() => {
     (async () => {
       const resp = await fetch(`/api/helloWorld`);
-      const jsonData = (await resp.json()) as HelloWorld;
+      const jsonData = await resp.json();
       setHelloWorld(jsonData.value);
     })();
   }, []);
 
   useEffect(() => {
     // Create Socket.IO connection
-    const newSocket = io("ws://localhost:8000/", { transports: ["websocket"] });
-
-    newSocket.on("message", (data) => {
-      console.log("Received message:", data);
-    });
+    const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+      //@ts-expect-error : import.meta.env exists in deno
+      import.meta.env.PROD ? "/" : "ws://localhost:8000/",
+      { transports: ["websocket"] }
+    );
 
     // Socket event listeners
     newSocket.on("connect", () => {
