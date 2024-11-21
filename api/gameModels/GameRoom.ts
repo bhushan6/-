@@ -13,13 +13,12 @@ import {
 import { io } from "socket.io-client";
 
 type UserType = {
-  socket: Socket<ClientToServerEvents, ServerToClientEvents>;
+  socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
   name: string;
   disconnected?: boolean;
   id: string;
   cards: number[];
 };
-
 
 export class GameRoom {
   private _deck = generateUnoDeck(true);
@@ -71,27 +70,31 @@ export class GameRoom {
     this._numberOfCards = numberOfCard;
   }
 
-  public addPlayer = (user: UserType) => {
+  public addPlayer = (user: Omit<UserType, "id">) => {
+    const filledRoomSize = this._players.size;
     if (this.size === this._players.size) {
       console.warn("Room is already full");
       return null;
     }
     user.disconnected = false;
-    this._players.set(user.id, user);
+    const newUser: UserType = { ...user, id: `${filledRoomSize}` };
+    this._players.set(newUser.id, newUser);
     user.socket.join(this._roomId);
 
-    if (this.size === this._players.size) {
-      const firstCard = this.distributesCards();
 
-      this._players.forEach((player) => {
-        const cards = player.cards;
-        cards.push(this._numberOfCards, firstCard);
-        player.socket.emit("startGame", new Uint8Array(cards));
-      });
 
-      this._gameStarted = true;
-    }
-    return this._players;
+    // if (this.size === this._players.size) {
+    //   const firstCard = this.distributesCards();
+
+    //   this._players.forEach((player) => {
+    //     const cards = player.cards;
+    //     cards.push(this._numberOfCards, firstCard);
+    //     player.socket.emit("startGame", new Uint8Array(cards));
+    //   });
+
+    //   this._gameStarted = true;
+    // }
+    return newUser.id;
   };
 
   public disconnectPlayer = (player: UserType) => {
@@ -102,7 +105,10 @@ export class GameRoom {
     player.disconnected = true;
   };
 
-  public rejoinPlayer = (userId: string, socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
+  public rejoinPlayer = (
+    userId: string,
+    socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
+  ) => {
     const user = this._players.get(userId);
     if (!user)
       throw new Error(`User with user id : ${userId} does not exist in room`);

@@ -216,10 +216,10 @@ export function decodeRoomData(buffer: ArrayBuffer) {
   return { roomId, size, numberOfCards };
 }
 
-const roomBuffer = encodeRoomData(200, 4, 5);
-console.log(roomBuffer);
+// const roomBuffer = encodeRoomData(200, 4, 5);
+// console.log(roomBuffer);
 
-console.log(decodeRoomData(roomBuffer));
+// console.log(decodeRoomData(roomBuffer));
 
 //   // Example usage in both client and server
 //   try {

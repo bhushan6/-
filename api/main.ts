@@ -9,15 +9,75 @@ import {
   ServerToClientEvents,
   SocketData,
 } from "../src/shared/types.ts";
-import { decodeRoomData } from "../src/shared/card.ts";
+// import { decodeRoomData  } from "../src/shared/card.ts";
 
 const router = new Router();
 
-console.log(decodeRoomData);
+// console.log(decodeRoomData);
 
 //REST API routes example
 router.get("/api/helloWorld", (context) => {
   context.response.body = { value: "Hello World!" };
+});
+
+router.get("/api/createRoom", (context) => {
+  //get query params
+  const size =context.request.url.searchParams.get("size");
+  const numberOfCard = context.request.url.searchParams.get("numOfCards");
+
+  if (!size || !numberOfCard) {
+    context.response.body = { error: "Invalid parameters" };
+    context.response.status = 400;
+    return;
+  }
+  //look for which room index is available
+  const numOfRooms = gameRoomMap.size;
+  //first room
+  if (numOfRooms === 0) {
+    const gameRoom = new GameRoom({
+      id: `0`,
+      size: Number(size),
+      io,
+      numberOfCard: Number(numberOfCard),
+    });
+    gameRoomMap.set(`0`, gameRoom);
+    context.response.body = { roomId: 0 };
+    context.response.status = 201;
+    return;
+  }
+  //if all rooms are full
+  //TO DO: add pagination to the rooms
+  if (numOfRooms === 256) {
+    context.response.body = { error: "No more rooms available" };
+    context.response.status = 400;
+    return;
+  }
+  let roomId: number | null = null;
+  for (let i = 0; i < numOfRooms; i++) {
+    if (gameRoomMap.get(`${i}`) == undefined) {
+      roomId = i;
+      const gameRoom = new GameRoom({
+        id: `${i}`,
+        size: Number(size),
+        io,
+        numberOfCard: Number(numberOfCard),
+      });
+      gameRoomMap.set(`${i}`, gameRoom);
+      break;
+    }
+  }
+  if (roomId == null) {
+    roomId = numOfRooms;
+    const gameRoom = new GameRoom({
+      id: `${roomId}`,
+      size: Number(size),
+      io,
+      numberOfCard: Number(numberOfCard),
+    });
+    gameRoomMap.set(`${roomId}`, gameRoom);
+  }
+  context.response.body = { roomId };
+  context.response.status = 201;
 });
 
 // Create Socket.IO server
@@ -40,28 +100,18 @@ const gameRoomMap = new Map<string, GameRoom>();
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
 
-  socket.on("createRoom", (data) => {
-    // const gameRoom = new GameRoom({
-    //   id: data.id,
-    //   size: data.size,
-    //   io,
-    //   numberOfCard: data.numberOfCard,
-    // });
-    // gameRoomMap.set(data.id, gameRoom);
-  });
-
-  socket.on("joinRoom", (data) => {
-    console.log(data, "ADD PLAYER");
-    // const gameRoom = gameRoomMap.get(data.roomId);
-    // if (!gameRoom)
-    //   throw new Error(`Game room with an id ${data.roomId} does not exist`);
-    // gameRoom.addPlayer({
-    //   id: data.id,
-    //   name: data.name,
-    //   socket: socket,
-    //   disconnected: false,
-    //   cards: [],
-    // });
+  socket.on("joinRoom", (data, callback) => {
+ 
+    const gameRoom = gameRoomMap.get(`${data.roomId}`);
+    if (!gameRoom)
+      throw new Error(`Game room with an id ${data.roomId} does not exist`);
+    const playerId = gameRoom.addPlayer({
+      name: data.name,
+      socket: socket,
+      disconnected: false,
+      cards: [],
+    });
+    callback(playerId);
   });
 
   socket.on("disconnect", () => {

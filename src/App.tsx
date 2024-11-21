@@ -3,21 +3,18 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { io, Socket } from "socket.io-client";
 import { ClientToServerEvents, ServerToClientEvents } from "./shared/types.ts";
+import CreateRoom from "./Pages/CreateRoom.tsx";
+import Game from "./Pages/Game.tsx";
+
+export type ClientSocketType = Socket<ServerToClientEvents, ClientToServerEvents>
 
 function App() {
-  const [helloWorld, setHelloWorld] = useState<string | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const resp = await fetch(`/api/helloWorld`);
-      const jsonData = await resp.json();
-      setHelloWorld(jsonData.value);
-    })();
-  }, []);
+  const [socket, setSocket] = useState<ClientSocketType | null>(null);
+  const [playerId, setPlayerId] = useState<number | null>(null);
 
   useEffect(() => {
     // Create Socket.IO connection
-    const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+    const newSocket: ClientSocketType  = io(
       //@ts-expect-error : import.meta.env exists in deno
       import.meta.env.PROD ? "/" : "ws://localhost:8000/",
       { transports: ["websocket"] }
@@ -28,29 +25,20 @@ function App() {
       console.log("Connected to Socket.IO server");
     });
 
+    setSocket(newSocket);
+
     return () => {
       newSocket.close();
     };
   }, []);
 
-  if (!helloWorld) {
-    return <h1>Loading...</h1>;
-  }
+  if(!socket) return <div>Loading...</div>;
+
 
   return (
     <>
-      <div style={{ display: "flex", gap: "10px" }}>
-        <img src="/deno.png" className="logo" alt="deno logo" />
-        <img src="/vite.svg" className="logo" alt="vite logo" />
-      </div>
-      <h1>{helloWorld}</h1>
-      <button
-        onClick={() => {
-          console.log("Add");
-        }}
-      >
-        Add
-      </button>
+      {playerId === null && <CreateRoom socket={socket} setPlayerId={setPlayerId} />}
+      {playerId && <Game playerId={playerId} />}
     </>
   );
 }

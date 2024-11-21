@@ -4,8 +4,7 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-  createRoom: (data: ArrayBuffer) => void;
-  joinRoom: (data: ArrayBuffer) => void;
+  joinRoom: (data: {roomId: number, name: string}, callback: (playerId: string | null) => void) => void;
 }
 
 export interface InterServerEvents {
