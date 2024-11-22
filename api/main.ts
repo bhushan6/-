@@ -11,18 +11,29 @@ import {
 } from "../src/shared/types.ts";
 // import { decodeRoomData  } from "../src/shared/card.ts";
 
+//API Router
 const router = new Router();
 
-// console.log(decodeRoomData);
-
-//REST API routes example
-router.get("/api/helloWorld", (context) => {
-  context.response.body = { value: "Hello World!" };
+// Socket.IO server initialization
+const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>({
+  cors: {
+    origin: "http://localhost:5173", // Update this to match your React app URL
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 });
 
+const gameRoomMap = new Map<string, GameRoom>();
+
+//API Routes
 router.get("/api/createRoom", (context) => {
   //get query params
-  const size =context.request.url.searchParams.get("size");
+  const size = context.request.url.searchParams.get("size");
   const numberOfCard = context.request.url.searchParams.get("numOfCards");
 
   if (!size || !numberOfCard) {
@@ -80,38 +91,29 @@ router.get("/api/createRoom", (context) => {
   context.response.status = 201;
 });
 
-// Create Socket.IO server
-const io = new Server<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->({
-  cors: {
-    origin: "http://localhost:5173", // Update this to match your React app URL
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
-
-const gameRoomMap = new Map<string, GameRoom>();
-
-//socket io  example
+//socket io
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
-
   socket.on("joinRoom", (data, callback) => {
- 
     const gameRoom = gameRoomMap.get(`${data.roomId}`);
+
     if (!gameRoom)
       throw new Error(`Game room with an id ${data.roomId} does not exist`);
+
     const playerId = gameRoom.addPlayer({
       name: data.name,
       socket: socket,
       disconnected: false,
       cards: [],
     });
+
+    gameRoom.rejoinPlayer;
+
     callback(playerId);
+  });
+
+  //@ts-expect-error: ping is internal socket.io event
+  socket.on("ping", (callback) => {
+    callback();
   });
 
   socket.on("disconnect", () => {
@@ -119,6 +121,7 @@ io.on("connection", (socket) => {
   });
 });
 
+//Boilerplate stuff
 const app = new Application();
 app.use(oakCors());
 app.use(router.routes());

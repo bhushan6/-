@@ -1,4 +1,3 @@
-// @deno-types="npm:@types/react@^18.3.3"
 import { bufferToBase64, encodeRoomData } from "../shared/card.ts";
 import { ClientSocketType } from "../App.tsx";
 
@@ -25,8 +24,8 @@ const CreateRoom = ({socket, setPlayerId}: {socket: ClientSocketType, setPlayerI
             const data = await response.json();
             if(response.status === 201){
               const roomId = data.roomId;
-              const size = formValues.size;
-              const numOfCards = formValues.numOfCards;
+              const size = Number(formValues.size);
+              const numOfCards = Number(formValues.numOfCards);
               socket.emit("joinRoom", { roomId, name: formValues.name }, (playerId) => {
                 // console.log("Player ID:", playerId);
                 if(playerId !== null){
