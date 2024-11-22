@@ -18,7 +18,7 @@ function App() {
 
   useEffect(() => {
     // Create Socket.IO connection
-    const newSocket: ClientSocketType = io("ws://localhost:8000/", {
+    const newSocket: ClientSocketType = io("/", {
       transports: ["websocket"],
     });
 
